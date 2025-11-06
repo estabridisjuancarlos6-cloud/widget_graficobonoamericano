@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico Tasa Bono Americano</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+
+        @font-face {
+            font-family: 'BlissLight';
+            src: url('font/BlissLight Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        /* Estilos base para responsividad y presentación */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: "BlissLight", sans-serif;
+        }
+        /* Contenedor principal para el gráfico */
+        .chart-container {
+            width: 90%; 
+            height: 80vh; /* Altura basada en el viewport para mejor ajuste */
+            margin: 5vh auto; /* Centrar */
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #373359; /* Color de título */
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+        <h2>Tasa del Bono Americano (10 Años)</h2>
+    <div class="chart-container">
+        <canvas id="usBondChart"></canvas>
+        <p style="font-size: 0.7em; text-align: center; color: #666;">Fuente: Reserva Federal de EE. UU. (FRED)</p>
+    </div>
+
+    <script>
+        // *** IMPORTANTE: Reemplaza TU_API_KEY_DE_FRED con tu clave real. ***
+        const FRED_API_KEY = "a78a5a55f6a94d0dc5e07ed08b921056";
+        
+        // ID de la serie para el Rendimiento del Bono a 10 años (DGS10)
+        const SERIES_ID = "DGS10"; 
+        
+        // URL de la API de FRED (datos desde el año 2020 para un gráfico que muestre la tendencia reciente)
+        const API_URL = `https://api.stlouisfed.org/fred/series/observations?series_id=${SERIES_ID}&api_key=${FRED_API_KEY}&file_type=json&observation_start=2020-01-01&sort_order=asc`;
+
+        async function fetchAndRenderBondChart() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`Error de red: ${response.status}`);
+                }
+                const data = await response.json();
+
+                // 1. Preparación de los datos
+                const fechas = [];
+                const valores = [];
+
+                data.observations.forEach(obs => {
+                    // Ignoramos valores faltantes (identificados por ".")
+                    if (obs.value !== '.') {
+                        fechas.push(obs.date); 
+                        valores.push(parseFloat(obs.value));
+                    }
+                });
+
+                // 2. Renderizar el gráfico con Chart.js
+                const ctx = document.getElementById('usBondChart').getContext('2d');
+                
+                new Chart(ctx, {
+                    type: 'line', 
+                    data: {
+                        labels: fechas, // Eje X: Las fechas
+                        datasets: [{
+                            label: 'Rendimiento Bono 10 Años (%)',
+                            data: valores, // Eje Y: Los valores numéricos
+                            borderColor: '#198754', // Un color verde, similar al de su imagen
+                            backgroundColor: 'rgba(25, 135, 84, 0.1)', // Área bajo la curva
+                            borderWidth: 2,
+                            tension: 0.2, 
+                            pointRadius: 0 // No mostrar puntos
+                        }]
+                    },
+                    options: {
+                        // Opciones de Responsividad (clave para OnSign TV)
+                        responsive: true,
+                        maintainAspectRatio: false, 
+                        scales: {
+                            x: {
+                                // Configuración del Eje X (Fechas)
+                                ticks: {
+                                    maxTicksLimit: 10,
+                                    callback: function(val, index) {
+                                        // Muestra solo el año completo en el eje X
+                                        if (this.getLabelForValue(val).endsWith('-01-01')) {
+                                            return this.getLabelForValue(val).substring(0, 4);
+                                        }
+                                        return null;
+                                    }
+                                }
+                            },
+                            y: {
+                                // Configuración del Eje Y (Rendimiento)
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: 'Rendimiento (%)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false // Ocultar la leyenda
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                            }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error al obtener los datos de FRED:", error);
+                document.getElementById('usBondChart').parentNode.innerHTML = '<p style="text-align: center; color: red;">Error al cargar los datos del bono. Verifique la clave API.</p>';
+            }
+        }
+
+        // Ejecutar la función para cargar y dibujar el gráfico
+        fetchAndRenderBondChart();
+    </script>
+</body>
+</html>
