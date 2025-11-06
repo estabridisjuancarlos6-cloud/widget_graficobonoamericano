@@ -51,13 +51,19 @@
         // ID de la serie para el Rendimiento del Bono a 10 años (DGS10)
         const SERIES_ID = "DGS10"; 
         
+        const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
         // URL de la API de FRED (datos desde el año 2020 para un gráfico que muestre la tendencia reciente)
-        const API_URL = `https://api.stlouisfed.org/fred/series/observations?series_id=${SERIES_ID}&api_key=${FRED_API_KEY}&file_type=json&observation_start=2020-01-01`;
+        const FRED_ENDPOINT = `https://api.stlouisfed.org/fred/series/observations?series_id=${SERIES_ID}&api_key=${FRED_API_KEY}&file_type=json&observation_start=2020-01-01&sort_order=asc`;
+
+        const API_URL = CORS_PROXY + FRED_ENDPOINT;
 
         async function fetchAndRenderBondChart() {
             try {
                 const response = await fetch(API_URL);
                 if (!response.ok) {
+                    if (response.status === 403) {
+                     throw new Error("Proxy requiere activación. Visite 'https://cors-anywhere.herokuapp.com/' una vez en su navegador.");
+                }
                     throw new Error(`Error de red: ${response.status}`);
                 }
                 const data = await response.json();
@@ -140,5 +146,4 @@
         fetchAndRenderBondChart();
     </script>
 </body>
-
 </html>
