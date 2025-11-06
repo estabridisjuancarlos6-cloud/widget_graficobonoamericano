@@ -52,7 +52,7 @@
         const SERIES_ID = "DGS10"; 
         
         // URL de la API de FRED (datos desde el año 2020 para un gráfico que muestre la tendencia reciente)
-        const API_URL = `https://api.stlouisfed.org/fred/series/observations?series_id=${SERIES_ID}&api_key=${FRED_API_KEY}&file_type=json&observation_start=2020-01-01&sort_order=asc`;
+        const API_URL = `https://api.stlouisfed.org/fred/series/observations?series_id=${SERIES_ID}&api_key=${FRED_API_KEY}&file_type=json&observation_start=2020-01-01`;
 
         async function fetchAndRenderBondChart() {
             try {
@@ -140,4 +140,5 @@
         fetchAndRenderBondChart();
     </script>
 </body>
+
 </html>
