@@ -13,67 +13,76 @@
       font-style: normal;
     }
 
-    body, html {
+    html, body {
       margin: 0;
       padding: 0;
       height: 100%;
       font-family: "BlissLight", sans-serif;
       background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     h2 {
       text-align: center;
       color: #373359;
-      margin: 10px 0 5px 0;
-      font-size: 1rem;
+      margin: 6px 0 2px 0;
+      font-size: clamp(0.8rem, 2vw, 1rem);
+      flex-shrink: 0;
     }
 
-    /* 🔹 Contenedor externo del gráfico (se adapta a cualquier tamaño) */
+    /* 🔹 Contenedor flexible del gráfico */
     .chart-wrapper {
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-      max-height: 100%;
+      flex: 1;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: stretch; /* 🔸 permite ocupar todo el alto */
+      padding: 6px;
+      box-sizing: border-box;
+      min-height: 0; /* 🔸 evita overflow en contenedores flex */
     }
 
-    /* 🔹 Caja que contiene el gráfico (la que irá dentro del layout) */
+    /* 🔹 Caja interna que se adapta completamente al alto disponible */
     .chart-container {
+      position: relative;
+      flex: 1;
       width: 100%;
-      height: 100%;
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 480px;
+      height: 100%; /* 🔸 ocupa todo el alto del contenedor */
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      position: relative;
     }
 
-    /* 🔹 Canvas que se adapta completamente */
-    .chart-container canvas {
+    canvas {
+      flex: 1;
       width: 100% !important;
       height: 100% !important;
       object-fit: contain;
     }
 
     .fuente {
-      font-size: 0.6em;
-      text-align: center;
+      font-size: clamp(0.5rem, 1.5vw, 0.7rem);
       color: #666;
-      margin-top: 4px;
+      position: absolute;
+      bottom: 4px;
+      text-align: center;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.6);
+      margin: 0;
+      padding: 2px 0;
     }
   </style>
 </head>
 <body>
-  <!-- 🔸 Título independiente (fuera del gráfico) -->
   <h2>Tasa del Bono Americano (10 Años)</h2>
 
-  <!-- 🔸 Contenedor adaptable del gráfico -->
   <div class="chart-wrapper">
     <div class="chart-container">
       <canvas id="usBondChart"></canvas>
@@ -83,7 +92,7 @@
 
   <script>
     const FRED_API_KEY = "a78a5a55f6a94d0dc5e07ed08b921056";
-    const SERIES_ID = "DGS10"; 
+    const SERIES_ID = "DGS10";
     const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
     const FRED_ENDPOINT = `https://api.stlouisfed.org/fred/series/observations?series_id=${SERIES_ID}&api_key=${FRED_API_KEY}&file_type=json&observation_start=2020-01-01&sort_order=asc`;
     const API_URL = CORS_PROXY + FRED_ENDPOINT;
@@ -104,7 +113,7 @@
 
         data.observations.forEach(obs => {
           if (obs.value !== '.') {
-            fechas.push(obs.date); 
+            fechas.push(obs.date);
             valores.push(parseFloat(obs.value));
           }
         });
@@ -120,23 +129,21 @@
               borderColor: '#198754',
               backgroundColor: 'rgba(25, 135, 84, 0.1)',
               borderWidth: 2,
-              tension: 0.2,
+              tension: 0.25,
               pointRadius: 0
             }]
           },
           options: {
             responsive: true,
-            maintainAspectRatio: false, // 🔑 para adaptarse al contenedor
+            maintainAspectRatio: false, // 🔸 permite ocupar todo el alto disponible
             scales: {
               x: {
                 ticks: {
                   maxTicksLimit: 6,
                   font: ctx => ({ size: Math.max(6, ctx.chart.width / 80) }),
                   callback: function(val) {
-                    if (this.getLabelForValue(val).endsWith('-01-01')) {
-                      return this.getLabelForValue(val).substring(0, 4);
-                    }
-                    return null;
+                    const label = this.getLabelForValue(val);
+                    return label.endsWith('-01-01') ? label.substring(0, 4) : null;
                   }
                 }
               },
@@ -164,7 +171,7 @@
         });
       } catch (error) {
         console.error("Error al obtener los datos de FRED:", error);
-        document.getElementById('usBondChart').parentNode.innerHTML = 
+        document.getElementById('usBondChart').parentNode.innerHTML =
           '<p style="text-align: center; color: red;">Error al cargar los datos del bono. Verifique la clave API.</p>';
       }
     }
