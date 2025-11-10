@@ -92,9 +92,9 @@
   <script>
     const FRED_API_KEY = "a78a5a55f6a94d0dc5e07ed08b921056";
     const SERIES_ID = "DGS10";
-    const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
+    const CORS_PROXY = "https://api.allorigins.win/get?url=";
     const FRED_ENDPOINT = `https://api.stlouisfed.org/fred/series/observations?series_id=${SERIES_ID}&api_key=${FRED_API_KEY}&file_type=json&observation_start=2020-01-01&sort_order=asc`;
-    const API_URL = CORS_PROXY + FRED_ENDPOINT;
+    const API_URL = `${CORS_PROXY}${encodeURIComponent(FRED_ENDPOINT)}`;
 
     async function fetchAndRenderBondChart() {
       try {
@@ -110,7 +110,9 @@
         const fechas = [];
         const valores = [];
 
-        data.observations.forEach(obs => {
+        var object = JSON.parse(data.contents);
+
+        object.observations.forEach(obs => {
           if (obs.value !== '.') {
             fechas.push(obs.date);
             valores.push(parseFloat(obs.value));
@@ -179,4 +181,3 @@
   </script>
 </body>
 </html>
-
