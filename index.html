@@ -3,8 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src
+    'self'
+    https://cdn.jsdelivr.net
+    'nonce-chart';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data:;
+  connect-src https://fred-proxy.bertolfranco26.workers.dev;
+  font-src 'self';
+  object-src 'none';
+">
   <title>Gráfico Tasa Bono Americano</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script
+  src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+  integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"
+  crossorigin="anonymous"></script>
   <style>
     @font-face {
       font-family: 'BlissLight';
@@ -88,7 +103,7 @@
     </div>
   </div>
 
-  <script>
+  <script nonce="chart">
     const API_URL = `https://fred-proxy.bertolfranco26.workers.dev/fred?series=DGS10&start=2020-01-01`;
 
     async function fetchAndRenderBondChart() {
@@ -174,4 +189,3 @@
   </script>
 </body>
 </html>
-
